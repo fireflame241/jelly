@@ -1,4 +1,4 @@
-import cmath, collections, copy, dictionary, fractions, functools, itertools, locale, math, numpy, operator, parser, random, re, sympy, sys, time, urllib.request
+import cmath, collections, copy, dictionary, fractions, functools, itertools, locale, math, numpy, operator, random, re, sympy, sys, time, urllib.request
 
 code_page  = '''¡¢£¤¥¦©¬®µ½¿€ÆÇÐÑ×ØŒÞßæçðıȷñ÷øœþ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~¶'''
 code_page += '''°¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ƁƇƊƑƓƘⱮƝƤƬƲȤɓƈɗƒɠɦƙɱɲƥʠɼʂƭʋȥẠḄḌẸḤỊḲḶṂṆỌṚṢṬỤṾẈỴẒȦḂĊḊĖḞĠḢİĿṀṄȮṖṘṠṪẆẊẎŻạḅḍẹḥịḳḷṃṇọṛṣṭụṿẉỵẓȧḃċḋėḟġḣŀṁṅȯṗṙṡṫẇẋẏż«»‘’“”'''
@@ -12,17 +12,12 @@ str_upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 inf = float('inf')
 nan = float('nan')
 sys.setrecursionlimit(1 << 30)
+
 class attrdict(dict):
 	def __init__(self, *args, **kwargs):
 		dict.__init__(self, *args, **kwargs)
 		self.__dict__ = self
 
-def to_string(k):
-	return ''.join(k) if is_string(k) else str(k)
-
-def func_a(x,links):
-	sub_function = lambda k: to_string(variadic_link(links[1],([k.group(0)]+list(k.groups()),k.span())))
-	return(list(re.sub(''.join(links[0].call()), sub_function, ''.join(map(str,x)))))
 def arities(links):
 	return [link.arity for link in links]
 
@@ -269,6 +264,10 @@ def simplest_number(number):
 	if number % 1:
 		return float(number)
 	return int(number)
+
+def sub_quick(x,links):
+	sub_function = lambda k: to_string(variadic_link(links[1],([k.group(0)]+list(k.groups()),k.span())))
+	return(list(re.sub(''.join(links[0].call()), sub_function, ''.join(map(str,x)))))
 
 def get_request(url):
 	url = ''.join(map(str, url))
@@ -1000,6 +999,9 @@ def tie(links, outmost_links, index):
 def time_format(bitfield):
 	time_string = ':'.join(['%H'] * (bitfield & 4 > 0) + ['%M'] * (bitfield & 2 > 0) + ['%S'] * (bitfield & 1 > 0))
 	return list(time.strftime(time_string))
+
+def to_string(k):
+	return ''.join(k) if is_string(k) else str(k)
 
 def translate(mapping, array):
 	array = iterable(array, make_copy = True)
@@ -2390,11 +2392,6 @@ atoms = {
 		rdepth = 1,
 		call = lambda x,y: re.split(''.join(map(str,x)),''.join(map(str,y)))
 	),
-	# findall: pattern, string                            # œF
-	# finditer: pattern, string => groups                 # œḞ
-	# re.sub                    => string                 # œṠ
-	# re.search                                           # œR
-	# re.split: pattern, string                           # œṢ
 	'œṡ': attrdict(
 		arity = 2,
 		rdepth = 0,
@@ -2701,7 +2698,7 @@ quicks = {
 		condition = lambda links: len(links) == 2,
 		quicklink = lambda links, outmost_links, index: [attrdict(
 			arity = 1,
-			call = lambda x: func_a(x, links)
+			call = lambda x: sub_quick(x, links)
 		)]
 	),
 }
