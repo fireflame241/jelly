@@ -265,6 +265,10 @@ def simplest_number(number):
 		return float(number)
 	return int(number)
 
+def sub_quick(x,links):
+	sub_function = lambda k: to_string(variadic_link(links[1],([k.group(0)]+list(k.groups()),k.span())))
+	return(list(re.sub(''.join(links[0].call()), sub_function, ''.join(map(str,x)))))
+
 def get_request(url):
 	url = ''.join(map(str, url))
 	url = (re.match(r"[A-Za-z][A-Za-z0-9+.-]*://", url) == None and "http://" or "") + url
@@ -995,6 +999,9 @@ def tie(links, outmost_links, index):
 def time_format(bitfield):
 	time_string = ':'.join(['%H'] * (bitfield & 4 > 0) + ['%M'] * (bitfield & 2 > 0) + ['%S'] * (bitfield & 1 > 0))
 	return list(time.strftime(time_string))
+
+def to_string(k):
+	return ''.join(k) if is_string(k) else str(k)
 
 def translate(mapping, array):
 	array = iterable(array, make_copy = True)
@@ -2355,6 +2362,41 @@ atoms = {
 		rdepth = 0,
 		call = lambda x, y: split_evenly(iterable(x, make_range = True), y)
 	),
+	'œF': attrdict(
+		arity = 2,
+		ldepth = 1,
+		rdepth = 1,
+		call = lambda x,y: re.findall(''.join(map(str,x)), ''.join(map(str,y)))
+	),
+	'œḞ': attrdict(
+		arity = 2,
+		ldepth = 1,
+		rdepth = 1,
+		call = lambda x,y: [[k.group(0)]+list(k.groups()) for k in re.finditer(''.join(map(str,x)), ''.join(map(str,y)))]
+	),
+	'œṠ': attrdict(
+		arity = 2,
+		ldepth = 2,
+		rdepth = 1,
+		call = lambda x,y: re.sub(''.join(''.join(map(str,x[0]))), ''.join(''.join(map(str,x[1]))), ''.join(''.join(map(str,y))))
+	),
+	'œR': attrdict(
+		arity = 2,
+		rdepth = 1,
+		ldepth = 1,
+		call = lambda x,y: bool(re.search(''.join(map(str,x)),''.join(map(str,y))))
+	),
+	'œṢ': attrdict(
+		arity = 2,
+		ldepth = 1,
+		rdepth = 1,
+		call = lambda x,y: re.split(''.join(map(str,x)),''.join(map(str,y)))
+	),
+	# findall: pattern, string                            # œF
+	# finditer: pattern, string => groups                 # œḞ
+	# re.sub                    => string                 # œṠ
+	# re.search                                           # œR
+	# re.split: pattern, string                           # œṢ
 	'œṡ': attrdict(
 		arity = 2,
 		rdepth = 0,
@@ -2655,6 +2697,13 @@ quicks = {
 		quicklink = lambda links, outmost_links, index: [attrdict(
 			arity = links[0].arity,
 			call = lambda x, y = None: extremes(max, links[0], (x, y))
+		)]
+	),
+	'ÐR': attrdict(
+		condition = lambda links: len(links) == 2,
+		quicklink = lambda links, outmost_links, index: [attrdict(
+			arity = 1,
+			call = lambda x: sub_quick(x, links)
 		)]
 	),
 }
