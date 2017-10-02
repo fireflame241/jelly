@@ -265,9 +265,17 @@ def simplest_number(number):
 		return float(number)
 	return int(number)
 
-def sub_quick(x,links):
+def sub_quick(string, links):
+	regexes = iterable(links[0].call())
+	regexes = [''.join(regexes)] if is_string(regexes) else [''.join(k) for k in regexes]
 	sub_function = lambda k: to_string(variadic_link(links[1],([k.group(0)]+list(k.groups()),k.span())))
-	return(list(re.sub(''.join(links[0].call()), sub_function, ''.join(map(str,x)))))
+	string = iterable(''.join(string), make_copy = True)
+	if depth(string) == 1:
+		for regex in regexes:
+			string = [re.sub(''.join(regex), sub_function,k) for k in string]
+	else:
+		string = [sub_quick(k, links) for k in string]
+	return string
 
 def get_request(url):
 	url = ''.join(map(str, url))
@@ -1013,6 +1021,16 @@ def translate(mapping, array):
 			if item in source:
 				array[index] = destination[min(source.index(item), len(destination) - 1)]
 	return array
+
+def translate_regex(mapping, string):
+	string = ''.join(string)
+	mapping = iterable(mapping, make_copy = True)
+	while mapping:
+		regexes = iterable(mapping.pop(0))
+		subs = iterable(mapping.pop(0))
+		for (index, regex) in enumerate(regexes):
+			string = re.sub(regex, subs[min(index,len(subs)-1)], string)
+	return string
 
 def trim(trimmee, trimmer, left = False, right = False):
 	lindex = 0
@@ -2378,7 +2396,7 @@ atoms = {
 		arity = 2,
 		ldepth = 2,
 		rdepth = 1,
-		call = lambda x,y: re.sub(''.join(''.join(map(str,x[0]))), ''.join(''.join(map(str,x[1]))), ''.join(''.join(map(str,y))))
+		call = translate_regex
 	),
 	'œR': attrdict(
 		arity = 2,
